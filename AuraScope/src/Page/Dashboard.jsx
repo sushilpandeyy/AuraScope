@@ -8,7 +8,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [testName, setTestName] = useState('');
-  const [resume, setResume] = useState(null);
+  const [resumeText, setResumeText] = useState(''); // Holds resume text directly as input
   const [tests, setTests] = useState([]); // Holds existing test data
 
   const openModal = () => setIsModalOpen(true);
@@ -20,30 +20,44 @@ const Dashboard = () => {
   };
 
   // Handle form submission to create a new test session
-  const handleCreateTest = (e) => {
+  const handleCreateTest = async (e) => {
     e.preventDefault();
 
-    if (testName && resume) {
-      const uniqueId = uuidv4();
-      const newTest = { id: uniqueId, name: testName, resume };
+    if (testName && resumeText) {
+      const userId = sessionStorage.getItem('user');
+      if (!userId) {
+        alert('User ID not found in session');
+        return;
+      }
 
-      // Add new test to the list and navigate to test page
-      setTests([...tests, newTest]);
-      closeModal();
-      navigate(`/test/${uniqueId}`, { state: { testName, resume } });
-    } else {
-      alert('Please enter a test name and upload your resume');
-    }
-  };
+      try {
+        const response = await fetch('http://localhost:3000/createtest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId,
+            resumeData: resumeText,
+            title: testName,
+          }),
+        });
 
-  // Handle file selection and basic validation
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type)) {
-      setResume(file);
+        if (response.ok) {
+          const uniqueId = uuidv4();
+          const newTest = { id: uniqueId, name: testName, resume: resumeText };
+
+          setTests([...tests, newTest]);
+          closeModal();
+          navigate(`/test/${uniqueId}`, { state: { testName, resume: resumeText } });
+        } else {
+          alert('Failed to create test');
+        }
+      } catch (error) {
+        alert('Error submitting test data');
+      }
     } else {
-      alert('Please upload a valid resume file (PDF, DOC, DOCX)');
-      e.target.value = null;
+      alert('Please enter a test name and resume details');
     }
   };
 
@@ -86,7 +100,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Modal for Test Name and Resume Upload */}
+      {/* Modal for Test Name and Resume Text Input */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-8 w-full max-w-md">
@@ -104,12 +118,13 @@ const Dashboard = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-semibold mb-2">Upload Resume</label>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  className="w-full px-4 py-2 border rounded-lg text-gray-700 focus:outline-none"
-                  accept=".pdf,.doc,.docx"
+                <label className="block text-gray-700 text-sm font-semibold mb-2">Resume Text</label>
+                <textarea
+                  value={resumeText}
+                  onChange={(e) => setResumeText(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg text-gray-700 bg-white focus:outline-none focus:border-indigo-500"
+                  placeholder="Enter resume details here"
+                  rows="5"
                   required
                 />
               </div>
