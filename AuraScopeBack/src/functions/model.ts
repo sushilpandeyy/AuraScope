@@ -1,5 +1,7 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
+import { PrismaClient } from '@prisma/client';
+
 
 export const modal = async (req: Request, res: Response) => {
     const { resumeText } = req.body;
@@ -43,8 +45,37 @@ export const modal = async (req: Request, res: Response) => {
         // Log and return the response
         console.log("API Response:", response.data);
         return res.json(response.data);
+
     } catch (error) {
         console.error('Error communicating with Gemini API:', error);
         return res.status(500).send("Error generating HR soft-skill questions.");
     }
 };
+
+const prisma = new PrismaClient();
+
+export const saveQuestions = async (req: Request, res: Response) => {
+    const { id, questions } = req.body; // Expecting an array of question objects and an ID
+
+    if (!id || !questions) {
+        return res.status(400).json({ error: 'ID and questions are required' });
+    }
+
+    try {
+        // Perform the update using Prisma's update method
+        await prisma.test.update({
+            where: { id: id },
+            data: {
+                question: JSON.stringify(questions) // Save questions in JSON format
+            }
+        });
+
+        res.status(200).json({ message: 'Questions saved successfully' });
+    } catch (error) {
+        console.error('Error saving questions:', error);
+        res.status(500).json({ error: 'Failed to save questions' });
+    }
+};
+
+
+
