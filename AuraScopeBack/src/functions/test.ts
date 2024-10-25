@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
 import { generateAndSaveSoftSkillQuestions } from './model';
+import { stringify } from 'querystring';
 
 const prisma = new PrismaClient();
 
@@ -18,7 +19,7 @@ export const addtest = async (req: Request, res: Response) => {
             },
         });
         
-        const qqq= await generateAndSaveSoftSkillQuestions(resumeData, added.testid);
+        const qqq = JSON.stringify(await generateAndSaveSoftSkillQuestions(resumeData, added.testid));
         await prisma.test.update(
             {
                 where: {

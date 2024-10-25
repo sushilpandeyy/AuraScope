@@ -6,13 +6,14 @@ const UpperBodyPostureAnalyzer = () => {
   const videoRef = useRef(null);
   const [bodyAnalysis, setBodyAnalysis] = useState({});
   const [camera, setCamera] = useState(null);
-  
+
   const [isRecording, setIsRecording] = useState(false);
   const [audioChunks, setAudioChunks] = useState([]);
   const mediaRecorderRef = useRef(null);
   const [audioBlob, setAudioBlob] = useState(null);
-  
-  const [recordedData, setRecordedData] = useState([]); // Array to hold recorded parameters
+
+  // State to hold an array of recorded analyses
+  const [recordedAnalyses, setRecordedAnalyses] = useState([]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -43,27 +44,16 @@ const UpperBodyPostureAnalyzer = () => {
     }
   }, []);
 
-  useEffect(() => {
-    let interval;
-
-    if (isRecording) {
-      interval = setInterval(() => {
-        console.log(bodyAnalysis); // Log current body analysis
-        setRecordedData((prevData) => [...prevData, bodyAnalysis]); // Push to recorded data array
-      }, 1000); // Log every second
-    }
-
-    return () => {
-      clearInterval(interval); // Clean up the interval
-    };
-  }, [isRecording, bodyAnalysis]);
-
   const handlePoseResults = (results) => {
     const landmarks = results.poseLandmarks;
 
     if (landmarks) {
       const analysis = analyzeUpperBodyPosture(landmarks);
       setBodyAnalysis(analysis);
+
+      // Save the current analysis into the recordedAnalyses array
+      setRecordedAnalyses((prev) => [...prev, analysis]);
+      console.log("Recorded Analyses:", [...recordedAnalyses, analysis]); // Log the updated array
     }
   };
 
@@ -75,35 +65,25 @@ const UpperBodyPostureAnalyzer = () => {
     const elbowRight = landmarks[14];
     const nose = landmarks[0];
 
-    // Example analysis - you can expand this
-    const shoulderSymmetry = Math.abs(shoulderLeft.x - shoulderRight.x);
-    const elbowAngleLeft = calculateAngle(elbowLeft, shoulderLeft, nose);
-    const elbowAngleRight = calculateAngle(elbowRight, shoulderRight, nose);
+    // Calculate shoulder symmetry
+    const shoulderSymmetry = Math.abs(shoulderLeft.y - shoulderRight.y);
 
+    // Return an object with relevant posture information
     return {
+      shoulderLeft,
+      shoulderRight,
+      elbowLeft,
+      elbowRight,
+      nose,
       shoulderSymmetry,
-      elbowAngleLeft,
-      elbowAngleRight,
-      // Include any other analysis parameters you want to track
+      timestamp: Date.now(), // Optional: add timestamp for each entry
     };
-  };
-
-  // Function to calculate angles (example, implement your own logic)
-  const calculateAngle = (pointA, pointB, pointC) => {
-    // Implement angle calculation based on landmark coordinates
-    return 0; // Placeholder
   };
 
   return (
     <div>
-      <video ref={videoRef} style={{ display: 'none' }} />
-      <button onClick={() => setIsRecording(!isRecording)}>
-        {isRecording ? 'Stop Recording' : 'Start Recording'}
-      </button>
-      <div>
-        <h3>Recorded Data:</h3>
-        <pre>{JSON.stringify(recordedData, null, 2)}</pre>
-      </div>
+      <video ref={videoRef} autoPlay></video>
+      {/* Add additional UI elements as needed */}
     </div>
   );
 };
