@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response } from 'express';
+import { generateAndSaveSoftSkillQuestions } from './model';
 
 const prisma = new PrismaClient();
 
@@ -16,6 +17,18 @@ export const addtest = async (req: Request, res: Response) => {
                 title, // Add required fields like 'title' here
             },
         });
+        
+        const qqq= await generateAndSaveSoftSkillQuestions(resumeData, added.testid);
+        await prisma.test.update(
+            {
+                where: {
+                    testid: added.testid,
+                  },
+                  data: {
+                    question : qqq,
+                  },
+            }
+        )
         return res.status(200).json({ message: 'Test created' });
     } catch (error) {
         console.error(error);
