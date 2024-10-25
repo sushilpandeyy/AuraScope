@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  name      String
+  password  String
+  image     String?   @default("https://cdn.icon-icons.com/icons2/2643/PNG/512/male_boy_person_people_avatar_icon_159358.png")
+  createdAt DateTime  @default(now()) @db.Timestamptz
+  updatedAt DateTime  @updatedAt @db.Timestamptz
+
+  // Define the one-to-many relationship with Test
+  tests     Test[]
+}
+
+model Test {
+  testid    Int    @id @default(autoincrement())
+  userId    Int
+  createdAt DateTime @default(now()) @db.Timestamptz
+  user      User    @relation(fields: [userId], references: [id])
+  shoulderSymmetryScore Int 
+  armPositionScore      Int 
+  headAlignmentScore    Int
+  confidenceScore       Int
+}
