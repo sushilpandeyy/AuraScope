@@ -1,30 +1,65 @@
-import React, { useState } from 'react';
+// Dashboard.js
+import React, { useState, useEffect } from 'react';
 import { FaUserFriends } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
+import { v4 as uuidv4 } from 'uuid';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [testName, setTestName] = useState('');
   const [resume, setResume] = useState(null);
+  const [tests, setTests] = useState([]); // Holds existing test data
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const handleNavigation = (e) => {
+  // Function to handle navigation to test details
+  const handleTestCardClick = (testId) => {
+    navigate(`/test/${testId}`);
+  };
+
+  // Handle form submission to create a new test session
+  const handleCreateTest = (e) => {
     e.preventDefault();
+
     if (testName && resume) {
+      const uniqueId = uuidv4();
+      const newTest = { id: uniqueId, name: testName, resume };
+
+      // Add new test to the list and navigate to test page
+      setTests([...tests, newTest]);
       closeModal();
-      navigate('/test');
+      navigate(`/test/${uniqueId}`, { state: { testName, resume } });
     } else {
-      alert("Please enter a test name and upload your resume");
+      alert('Please enter a test name and upload your resume');
     }
   };
 
+  // Handle file selection and basic validation
   const handleFileChange = (e) => {
-    setResume(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file && ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type)) {
+      setResume(file);
+    } else {
+      alert('Please upload a valid resume file (PDF, DOC, DOCX)');
+      e.target.value = null;
+    }
   };
+
+  useEffect(() => {
+    // Simulate fetching test data from an API
+    const fetchTests = async () => {
+      const existingTests = [
+        { id: 'test-1', name: 'Math Test 101', score: 85 },
+        { id: 'test-2', name: 'Science Test 202', score: 92 },
+      ];
+      setTests(existingTests);
+    };
+
+    fetchTests();
+  }, []);
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen p-8">
@@ -41,21 +76,15 @@ const Dashboard = () => {
 
       {/* Cards Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <Card
-          icon={FaUserFriends}
-          title="Collaborative Learning"
-          description="Students can contribute their own notes, creating a growing repository of shared knowledge."
-        />
-        <Card
-          icon={FaUserFriends}
-          title="Personalized Learning"
-          description="Tailor your study experience to your own pace and style with personalized notes and resources."
-        />
-        <Card
-          icon={FaUserFriends}
-          title="Community Sharing"
-          description="Share your knowledge and collaborate with peers to create a rich learning environment."
-        />
+        {tests.map((test) => (
+          <Card
+            key={test.id}
+            icon={FaUserFriends}
+            title={test.name}
+            description={`Score: ${test.score ?? 'Pending'}`}
+            onClick={() => handleTestCardClick(test.id)}
+          />
+        ))}
       </div>
 
       {/* Modal for Test Name and Resume Upload */}
@@ -63,11 +92,9 @@ const Dashboard = () => {
         <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-8 w-full max-w-md">
             <h3 className="text-2xl font-bold mb-4 text-gray-800">Prepare for Test</h3>
-            <form onSubmit={handleNavigation}>
+            <form onSubmit={handleCreateTest}>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  Test Name
-                </label>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">Test Name</label>
                 <input
                   type="text"
                   value={testName}
@@ -78,9 +105,7 @@ const Dashboard = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  Upload Resume
-                </label>
+                <label className="block text-gray-700 text-sm font-semibold mb-2">Upload Resume</label>
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -93,7 +118,7 @@ const Dashboard = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className=" mr-4 px-4 py-2 text-white hover:text-gray-800"
+                  className="mr-4 px-4 py-2 text-gray-700 hover:text-gray-900"
                 >
                   Cancel
                 </button>
