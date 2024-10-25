@@ -42,4 +42,7 @@ model Test {
   bodyLanguageSummary   String?                // Optional: Summary of overall body language
   durationSeconds       Int       @default(0)  // Duration of the test in seconds
   testType              String    @default("SoftSkills") // Type of test for classification
+  question              String
 }
+
+
