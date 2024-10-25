@@ -7,7 +7,7 @@ import Login from './Page/Login';
 import NotFound from './Page/NotFound';
 import Homepage from './Page/Homepage';
 import Dashboard from './Page/Dashboard';
-
+import Test from './Page/Test';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
@@ -15,6 +15,7 @@ const router = createBrowserRouter(
         <Route path="" element={<Homepage />} />  
         <Route path="/login" element={<Login/>} /> 
         <Route path="dashboard" element={<Dashboard/>} /> 
+        <Route path="test" element={<Test/>} /> 
       </Route>
       <Route path="*" element={<NotFound />} />  
     </>

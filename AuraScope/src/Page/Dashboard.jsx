@@ -4,6 +4,11 @@ import Card from '../components/Card';
 
 const Dashboard = () => {
   return (
+    <>
+    <div className='flex '>
+<h2 >Recent test</h2>
+ <button>Take test</button>
+ </div>
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
       {/* Hardcoded Card */}
       <Card
@@ -24,6 +29,7 @@ const Dashboard = () => {
         description="Share your knowledge and collaborate with peers to create a rich learning environment."
       />
     </div>
+    </>
   );
 };
 
