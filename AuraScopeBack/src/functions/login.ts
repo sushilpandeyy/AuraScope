@@ -42,3 +42,39 @@ export const signup = async (req: Request, res: Response) => {
         return res.status(500).json({ error: 'An error occurred while signing up' });
     }
 };
+
+export const login = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+
+    try {
+        // Find the user by email
+        const user = await prisma.user.findUnique({
+            where: { email },
+        });
+
+        // Check if the user exists
+        if (!user) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
+
+        // Compare the provided password with the stored hashed password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            return res.status(400).json({ error: 'Invalid email or password' });
+        }
+
+        // Prepare user response (excluding the password)
+        const userResponse = {
+            "name": user.name,
+            "id": user.id,
+            "email": user.email,
+            "image": user.image,
+        };
+
+        return res.status(200).json({ message: 'Login successful', user: userResponse });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'An error occurred while logging in' });
+    }
+};

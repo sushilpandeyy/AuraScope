@@ -16,6 +16,7 @@ def generate_question(resume_text):
 
 # Accept input from Node.js
 if __name__ == "__main__":
+    print("Started")
     resume_text = sys.argv[1]
     question = generate_question(resume_text)
     print(json.dumps({"question": question}))
