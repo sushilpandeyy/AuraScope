@@ -13,7 +13,7 @@ const router = createBrowserRouter(
     <>
       <Route path="/" element={<App />}>  
         <Route path="" element={<Homepage />} />  
-        <Route path="login" element={<Login/>} /> 
+        <Route path="/login" element={<Login/>} /> 
         <Route path="dashboard" element={<Dashboard/>} /> 
       </Route>
       <Route path="*" element={<NotFound />} />  
