@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaUserFriends } from 'react-icons/fa'; // Example of importing an icon
-import Card from '../components/Card';
+import Card from "../components/Card"
 
 // Ensure the correct path to the Card component
 

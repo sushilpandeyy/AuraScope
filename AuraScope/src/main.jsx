@@ -3,10 +3,10 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider, Route, createRoutesFromElements } from 'react-router-dom';
 import './index.css';
 import App from './App';
-import Login from '../Page/Login';
-import NotFound from '../Page/NotFound';
-import Homepage from '../Page/Homepage';
-import Dashboard from '../Page/Dashboard';
+import Login from './Page/Login';
+import NotFound from './Page/NotFound';
+import Homepage from './Page/Homepage';
+import Dashboard from './Page/Dashboard';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
