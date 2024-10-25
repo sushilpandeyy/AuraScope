@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import UpperBodyPostureAnalyzer from "../components/Video"
 
 const Test = () => {
   const { id } = useParams();
