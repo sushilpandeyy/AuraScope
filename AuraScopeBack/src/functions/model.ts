@@ -5,12 +5,18 @@ const prisma = new PrismaClient();
 
 export const generateAndSaveSoftSkillQuestions = async (resumeText: string, testId: number) => {
     // Ensure resumeText is provided
+    console.log("IOT SRSsx")
     if (!resumeText) {
         throw new Error('resumeText is required');
     }
 
     // API key (keep this secure)
-    const apiKey = '';
+    const fetchApiKey = () => {
+        const apiKey = 'AIzaSyD8ZBJkzUkpC46RmH6D84K8R9XwzwSAbSU'; // Replace with the method to fetch the key securely
+        return apiKey;
+    };
+    
+    const apiKey = fetchApiKey();
     if (!apiKey) {
         console.error('API key is not defined. Please set GEMINI_API_KEY in your environment variables.');
         throw new Error('API key is not defined');
@@ -25,7 +31,13 @@ export const generateAndSaveSoftSkillQuestions = async (resumeText: string, test
     try {
         // Send a POST request to the Gemini API
         const response = await axios.post(apiUrl, {
-            prompt,
+            contents: [
+                {
+                    parts: [
+                        { text: prompt }
+                    ]
+                }
+            ]
         }, {
             headers: {
                 'Content-Type': 'application/json'
@@ -33,17 +45,16 @@ export const generateAndSaveSoftSkillQuestions = async (resumeText: string, test
         });
 
         // Log the full response data for debugging
-        console.log("API Response Data:", response.data);
+        console.log("API Response Data:", response.data?.candidates?.[0]?.content.parts[0]);
 
         // Extract the generated content from the response data
-        const generatedContent = response.data?.candidates?.[0]?.content;
-        
+        const generatedContent = response.data?.candidates?.[0]?.content.parts[0];
+
         if (!generatedContent) {
             throw new Error('No content received from the API.');
         }
-        
 
-        return generatedContent;
+        return response.data?.candidates?.[0]?.content.parts[0];
 
     } catch (error) {
         console.error('Error communicating with Gemini API:', error);
