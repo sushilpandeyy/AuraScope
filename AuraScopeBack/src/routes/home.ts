@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { signup, login } from '../functions/login';
+import { addtest, getTestsByUserId } from '../functions/test';
 import { modal } from '../functions/model';
 const router = Router();
 
@@ -16,8 +17,17 @@ router.post('/signup', (req: Request, res: Response) => {
     signup(req, res); // Directly call the signup function
 });
 
+router.post('/createtest', (req: Request, res: Response) => {
+    addtest(req, res); 
+});
+
 router.post('/modal',(req: Request, res: Response) => {
     modal(req, res);
 });
 
+router.get('/test',(req: Request, res: Response) => {
+   getTestsByUserId(req, res);
+});
+
 export default router;
+
