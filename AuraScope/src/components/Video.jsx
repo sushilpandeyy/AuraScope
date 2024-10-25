@@ -11,14 +11,14 @@ const UpperBodyPostureAnalyzer = () => {
   const mediaRecorderRef = useRef(null);
   const [audioBlob, setAudioBlob] = useState(null);
   const [question, setQuestion] = useState('');
-  const [isQuestionVisible, setIsQuestionVisible] = useState(false); // New state to control question visibility
+  const [isQuestionVisible, setIsQuestionVisible] = useState(false);
 
   const randomQuestions = [
     'What is your biggest goal for this week?',
     'How do you feel about your current posture?',
     'What can you do to improve your posture today?',
     'What is one habit you want to build this month?',
-    'How do you feel after sitting for long hours?'
+    'How do you feel after sitting for long hours?',
   ];
 
   useEffect(() => {
@@ -41,8 +41,8 @@ const UpperBodyPostureAnalyzer = () => {
         onFrame: async () => {
           await pose.send({ image: videoElement });
         },
-        width: 320, // Reduced width
-        height: 240, // Reduced height
+        width: 320,
+        height: 240,
       });
 
       setCamera(cam);
@@ -101,7 +101,7 @@ const UpperBodyPostureAnalyzer = () => {
 
         mediaRecorder.start();
         setIsRecording(true);
-        setIsQuestionVisible(true); // Show question section when recording starts
+        setIsQuestionVisible(true);
 
         mediaRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
@@ -144,7 +144,6 @@ const UpperBodyPostureAnalyzer = () => {
     }
   };
 
-  // Function to show a random question
   const handleNewQuestion = () => {
     const randomIndex = Math.floor(Math.random() * randomQuestions.length);
     setQuestion(randomQuestions[randomIndex]);
@@ -154,11 +153,12 @@ const UpperBodyPostureAnalyzer = () => {
     <div className="flex flex-col items-center justify-center p-4 h-screen bg-gradient-to-r from-indigo-100 to-blue-200">
       <h2 className="text-xl font-bold mb-4 text-gray-800">Upper Body Posture Analyzer with Audio</h2>
 
-      <div className="relative w-[320px] h-[240px] border-4 border-blue-300 rounded-lg overflow-hidden shadow-lg mb-4">
+      <div className="relative w-96 h-96 border-4 border-blue-300 rounded-lg overflow-hidden shadow-lg mb-4">
         <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" autoPlay muted></video>
       </div>
 
-      <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-lg mb-4">
+      {/* Details from API */}
+      {/* <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-lg mb-4">
         <h3 className="text-lg font-semibold mb-2 text-gray-700">Upper Body Analysis Result</h3>
         {bodyAnalysis.confidenceScore ? (
           <ul className="list-disc list-inside text-gray-600 space-y-1 text-sm">
@@ -171,7 +171,7 @@ const UpperBodyPostureAnalyzer = () => {
         ) : (
           <p className="text-gray-500 text-sm">No analysis available yet. Please ensure your webcam is active.</p>
         )}
-      </div>
+      </div> */}
 
       <div className="mt-2">
         {!isRecording ? (
