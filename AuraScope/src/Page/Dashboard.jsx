@@ -1,4 +1,3 @@
-// Dashboard.js
 import React, { useState, useEffect } from 'react';
 import { FaUserFriends } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -62,7 +61,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen p-8">
+    <div className="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen p-8 w-full">
       {/* Header Section */}
       <div className="text-center mb-12 flex items-center justify-between">
         <h2 className="text-4xl font-extrabold text-gray-900">Recent Tests</h2>
