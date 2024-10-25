@@ -25,16 +25,17 @@ model Test {
   userId                Int
   createdAt             DateTime  @default(now()) @db.Timestamptz
   user                  User      @relation(fields: [userId], references: [id])
-  status                String    @default("NotStarted")
+  resumeData            String
+  status                String?    @default("NotStarted")
 
   // Scoring fields related to soft skills/body language analysis
-  shoulderSymmetryScore Int       @default(0)   // Score from analyzing shoulder symmetry
-  armPositionScore      Int       @default(0)   // Score from analyzing arm position
-  headAlignmentScore    Int       @default(0)   // Score for head alignment assessment
-  confidenceScore       Int       @default(0)   // Overall confidence level score
+  shoulderSymmetryScore Int?       @default(0)   // Score from analyzing shoulder symmetry
+  armPositionScore      Int?       @default(0)   // Score from analyzing arm position
+  headAlignmentScore    Int?       @default(0)   // Score for head alignment assessment
+  confidenceScore       Int?       @default(0)   // Overall confidence level score
   
   // JSON field for conversation data (e.g., chat messages, conversation analysis)
-  conversationData      Json      // Stores conversation data in JSON format
+  conversationData      Json?      // Stores conversation data in JSON format
 
   // Additional fields for context, metadata, and optional scoring
   moodAnalysisScore     Int?                   // Optional: Score for mood analysis
@@ -42,4 +43,7 @@ model Test {
   bodyLanguageSummary   String?                // Optional: Summary of overall body language
   durationSeconds       Int       @default(0)  // Duration of the test in seconds
   testType              String    @default("SoftSkills") // Type of test for classification
+  question              String
 }
+
+

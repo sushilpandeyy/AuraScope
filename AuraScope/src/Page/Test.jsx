@@ -12,19 +12,12 @@ const Test = () => {
   }, [id]);
 
   return (
-    <div>
-      <h1>Test Details for Test ID: {id}</h1>
-      {testDetails ? (
-        <div>
-          <p>Test Name: {testDetails.name}</p>
-          <p>Score: {testDetails.score}</p>
-          {/* Additional test details */}
-        </div>
-      ) : (
-        <p>Loading test details...</p>
-      )}
-    </div>
-  );
-};
+ <>
+
+<UpperBodyPostureAnalyzer/>
+ 
+ </>
+  )
+}
 
 export default Test;
