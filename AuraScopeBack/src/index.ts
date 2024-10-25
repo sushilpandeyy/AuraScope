@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import homeRouter from './routes/home';
 import { spawn } from 'child_process';
+import 'dotenv/config';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
