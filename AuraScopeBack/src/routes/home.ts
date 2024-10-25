@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-
+import { signup } from '../functions/login'; 
 const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
@@ -9,7 +9,7 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/login', (req: Request, res: Response) => {
     res.send('Login')
 })
-router.post('/Signup', (req: Request, res: Response) => {
+router.post('/signup', (req: Request, res: Response) => {
     res.send('Signup')
 })
 
