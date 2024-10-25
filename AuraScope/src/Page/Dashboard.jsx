@@ -2,29 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { FaUserFriends } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
-import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios'
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [testName, setTestName] = useState('');
-  const [resumeText, setResumeText] = useState(''); // Holds resume text directly as input
-  const [tests, setTests] = useState([]); // Holds existing test data
+  const [resumeText, setResumeText] = useState('');
+  const [tests, setTests] = useState([]);
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+
+  // Retrieve user ID from session storage
+  const user = sessionStorage.getItem('user');
+  const userId = user ? parseInt(JSON.parse(user).id, 10) : null;
 
   // Function to handle navigation to test details
   const handleTestCardClick = (testId) => {
     navigate(`/test/${testId}`);
   };
 
+  // Fetch tests data specific to the user
+  useEffect(() => {
+    const fetchTests = async () => {
+      if (userId) {
+        try {
+          const response = await axios.post('http://localhost:3000/test', {
+            userId,
+          });
+          setTests(response.data); // Assuming response.data is an array of tests for the user
+        } catch (error) {
+          console.error('Error fetching test data:', error);
+        }
+      }
+    };
+
+    fetchTests();
+  }, [userId]);
+
   // Handle form submission to create a new test session
   const handleCreateTest = async (e) => {
     e.preventDefault();
 
     if (testName && resumeText) {
-      const userId = sessionStorage.getItem('user');
       if (!userId) {
         alert('User ID not found in session');
         return;
@@ -44,12 +65,10 @@ const Dashboard = () => {
         });
 
         if (response.ok) {
-          const uniqueId = uuidv4();
-          const newTest = { id: uniqueId, name: testName, resume: resumeText };
-
+          const newTest = await response.json(); // Assuming response returns the new test object
           setTests([...tests, newTest]);
           closeModal();
-          navigate(`/test/${uniqueId}`, { state: { testName, resume: resumeText } });
+          navigate(`/test/${newTest.id}`, { state: { testName, resume: resumeText } });
         } else {
           alert('Failed to create test');
         }
@@ -60,19 +79,6 @@ const Dashboard = () => {
       alert('Please enter a test name and resume details');
     }
   };
-
-  useEffect(() => {
-    // Simulate fetching test data from an API
-    const fetchTests = async () => {
-      const existingTests = [
-        { id: 'test-1', name: 'Math Test 101', score: 85 },
-        { id: 'test-2', name: 'Science Test 202', score: 92 },
-      ];
-      setTests(existingTests);
-    };
-
-    fetchTests();
-  }, []);
 
   return (
     <div className="bg-gradient-to-b from-blue-50 to-blue-100 min-h-screen p-8 w-full">
