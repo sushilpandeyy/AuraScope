@@ -12,6 +12,7 @@ export const signup = async (req: Request, res: Response) => {
         const existingUser = await prisma.user.findUnique({
             where: { email },
         });
+
         if (existingUser) {
             return res.status(400).json({ error: 'Email is already in use' });
         }
@@ -25,14 +26,19 @@ export const signup = async (req: Request, res: Response) => {
                 email,
                 name,
                 password: hashedPassword,
-                image: image || undefined,  // Use provided image or let Prisma default it
+                image: image || "https://cdn.icon-icons.com/icons2/2643/PNG/512/male_boy_person_people_avatar_icon_159358.png",  // Use provided image or let Prisma default it
             },
         });
 
-        return res.status(201).json({ message: 'User created successfully', user: newUser });
+        const nnnuser = {
+            "name": newUser.name,
+            "id": newUser.id,
+            "email": newUser.email
+        }
+
+        return res.status(201).json({ message: 'User created successfully', user: nnnuser });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'An error occurred while signing up' });
     }
 };
-

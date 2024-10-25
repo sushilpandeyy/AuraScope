@@ -16,17 +16,30 @@ model User {
   createdAt DateTime  @default(now()) @db.Timestamptz
   updatedAt DateTime  @updatedAt @db.Timestamptz
 
-  // Define the one-to-many relationship with Test
+  // One-to-many relationship with Test
   tests     Test[]
 }
 
 model Test {
-  testid    Int    @id @default(autoincrement())
-  userId    Int
-  createdAt DateTime @default(now()) @db.Timestamptz
-  user      User    @relation(fields: [userId], references: [id])
-  shoulderSymmetryScore Int 
-  armPositionScore      Int 
-  headAlignmentScore    Int
-  confidenceScore       Int
+  testid                Int       @id @default(autoincrement())
+  userId                Int
+  createdAt             DateTime  @default(now()) @db.Timestamptz
+  user                  User      @relation(fields: [userId], references: [id])
+  status                String    @default("NotStarted")
+
+  // Scoring fields related to soft skills/body language analysis
+  shoulderSymmetryScore Int       @default(0)   // Score from analyzing shoulder symmetry
+  armPositionScore      Int       @default(0)   // Score from analyzing arm position
+  headAlignmentScore    Int       @default(0)   // Score for head alignment assessment
+  confidenceScore       Int       @default(0)   // Overall confidence level score
+  
+  // JSON field for conversation data (e.g., chat messages, conversation analysis)
+  conversationData      Json      // Stores conversation data in JSON format
+
+  // Additional fields for context, metadata, and optional scoring
+  moodAnalysisScore     Int?                   // Optional: Score for mood analysis
+  eyeContactScore       Int?                   // Optional: Score for eye contact consistency
+  bodyLanguageSummary   String?                // Optional: Summary of overall body language
+  durationSeconds       Int       @default(0)  // Duration of the test in seconds
+  testType              String    @default("SoftSkills") // Type of test for classification
 }
