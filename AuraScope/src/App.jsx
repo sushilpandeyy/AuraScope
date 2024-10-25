@@ -1,12 +1,12 @@
-import { Outlet } from "react-router-dom"
+import React from 'react';
+import { Outlet } from 'react-router-dom';
 
-function App() {
-
+const App = () => {
   return (
-    <>
-    <Outlet/>
-    </>
-  )
-}
+  <>
+      <Outlet /> {/* Outlet for rendering nested routes */}
+      </>
+  );
+};
 
-export default App
+export default App;
