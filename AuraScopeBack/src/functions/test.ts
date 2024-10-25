@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 
 export const addtest = async (req: Request, res: Response) => {
-    const { userId, resumeData } = req.body;
+    const { userId, resumeData, title } = req.body;
 
     try {
         const added = await prisma.test.create({
@@ -13,10 +13,9 @@ export const addtest = async (req: Request, res: Response) => {
                 userId,
                 resumeData,
                 question: '[]', // Default value for the question field
-                title: 'Default Title', // Add required fields like 'title' here
+                title, // Add required fields like 'title' here
             },
         });
-
         return res.status(200).json({ message: 'Test created' });
     } catch (error) {
         console.error(error);
@@ -39,3 +38,4 @@ export const getTestsByUserId = async (req: Request, res: Response) => {
         return res.status(500).json({ error: 'An error occurred while retrieving tests' });
     }
 };
+
