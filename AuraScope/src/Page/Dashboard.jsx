@@ -3,6 +3,7 @@ import { FaUserFriends } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Card from '../components/Card';
 import axios from 'axios'
+import test from 'node:test';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -24,12 +25,12 @@ const Dashboard = () => {
   };
 
   // Fetch tests data specific to the user
-  useEffect(() => {
+   useEffect(() => {
     const fetchTests = async () => {
       if (userId) {
         try {
-          const response = await axios.post('http://localhost:3000/test', {
-            userId,
+          const response = await axios.get(`http://localhost:3000/test`, {
+            params: { userId }, // Pass userId as a query parameter
           });
           setTests(response.data); // Assuming response.data is an array of tests for the user
         } catch (error) {
@@ -40,6 +41,7 @@ const Dashboard = () => {
 
     fetchTests();
   }, [userId]);
+  console.log(test)
 
   // Handle form submission to create a new test session
   const handleCreateTest = async (e) => {
@@ -68,7 +70,6 @@ const Dashboard = () => {
           const newTest = await response.json(); // Assuming response returns the new test object
           setTests([...tests, newTest]);
           closeModal();
-          navigate(`/test/${newTest.id}`, { state: { testName, resume: resumeText } });
         } else {
           alert('Failed to create test');
         }

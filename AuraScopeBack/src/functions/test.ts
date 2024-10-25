@@ -38,12 +38,18 @@ export const addtest = async (req: Request, res: Response) => {
 };
 
 export const getTestsByUserId = async (req: Request, res: Response) => {
-    const { userId } = req.params;
+    const { userId } = req.query;
 
     try {
+        // Convert userId to an integer and validate it
+        const userIdInt = parseInt(userId as string, 10);
+        if (isNaN(userIdInt)) {
+            return res.status(400).json({ error: 'Invalid userId' });
+        }
+
         // Find all Test records associated with the userId
         const tests = await prisma.test.findMany({
-            where: { userId: parseInt(userId) },
+            where: { userId: userIdInt },
         });
 
         return res.status(200).json(tests);
@@ -52,4 +58,3 @@ export const getTestsByUserId = async (req: Request, res: Response) => {
         return res.status(500).json({ error: 'An error occurred while retrieving tests' });
     }
 };
-
