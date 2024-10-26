@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import homeRouter from './routes/home';
 import { spawn } from 'child_process';
 import "dotenv/config"
+import { getQuestionsByTestId } from './functions/test';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

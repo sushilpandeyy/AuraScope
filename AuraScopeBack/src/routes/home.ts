@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { signup, login } from '../functions/login';
 import { addtest, getTestsByUserId } from '../functions/test';
+import { getQuestionsByTestId } from '../functions/test';
 const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
@@ -23,6 +24,11 @@ router.post('/createtest', (req: Request, res: Response) => {
 router.get('/test',(req: Request, res: Response) => {
    getTestsByUserId(req, res);
 });
+
+router.get('/questions',(req: Request, res: Response) => {
+    getQuestionsByTestId(req, res);
+ });
+
 
 export default router;
 

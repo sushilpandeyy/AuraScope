@@ -1,8 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Pose } from '@mediapipe/pose';
 import { Camera } from '@mediapipe/camera_utils';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import WavEncoder from 'wav-encoder';
 
 const UpperBodyPostureAnalyzer = () => {
+  let { testid } = useParams();
   const videoRef = useRef(null);
   const [bodyAnalysis, setBodyAnalysis] = useState({});
   const [camera, setCamera] = useState(null);
@@ -12,14 +16,40 @@ const UpperBodyPostureAnalyzer = () => {
   const [audioBlob, setAudioBlob] = useState(null);
   const [question, setQuestion] = useState('');
   const [isQuestionVisible, setIsQuestionVisible] = useState(false);
+  const [randomQuestions, setRandomQuestions] = useState([]);
+  const [transcription, setTranscription] = useState(''); // Store transcription text
 
-  const randomQuestions = [
-    'What is your biggest goal for this week?',
-    'How do you feel about your current posture?',
-    'What can you do to improve your posture today?',
-    'What is one habit you want to build this month?',
-    'How do you feel after sitting for long hours?',
-  ];
+  const ASSEMBLY_AI_API_KEY = '8488517fdeff4eb38f02b0a532753ce0';
+
+  // Fetch questions from the API
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/questions?testId=${testid}`);
+        if (response.ok) {
+          const data = await response.json();
+          const parsedQuestions = data.map((item) => {
+            try {
+              const questionData = JSON.parse(item.question);
+              return questionData.map(q => q.question); // Extract question text
+            } catch (error) {
+              console.error("Error parsing question JSON:", error);
+              return [];
+            }
+          }).flat();
+          setRandomQuestions(parsedQuestions);
+        } else {
+          console.error('Failed to fetch questions:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching questions:', error);
+      }
+    };
+
+    if (testid) {
+      fetchQuestions();
+    }
+  }, [testid]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -92,6 +122,7 @@ const UpperBodyPostureAnalyzer = () => {
   };
 
   const startRecording = async () => {
+    console.log('Starting audio recording...');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -109,10 +140,16 @@ const UpperBodyPostureAnalyzer = () => {
           }
         };
 
-        mediaRecorder.onstop = () => {
+        mediaRecorder.onstop = async () => {
+          console.log('Recording stopped. Creating audio blob...');
           const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          setAudioBlob(audioBlob);
+          
+          // Convert to WAV format
+          const wavBlob = await convertToWav(audioBlob);
+          setAudioBlob(wavBlob);
           setIsRecording(false);
+
+          transcribeAudio(wavBlob); // Transcribe audio after recording stops
         };
       } catch (error) {
         console.error('Error accessing microphone:', error);
@@ -121,32 +158,80 @@ const UpperBodyPostureAnalyzer = () => {
   };
 
   const stopRecording = () => {
+    console.log('Stopping audio recording...');
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
     }
   };
 
-  const playAudio = () => {
-    if (audioBlob) {
-      const audioURL = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioURL);
-      audio.play();
-    }
+  // Convert WebM Blob to WAV using wav-encoder
+  const convertToWav = async (blob) => {
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+    const wavArrayBuffer = await WavEncoder.encode({
+      sampleRate: audioBuffer.sampleRate,
+      channelData: audioBuffer.getChannelData(0) // mono channel
+    });
+
+    return new Blob([wavArrayBuffer], { type: 'audio/wav' });
   };
 
-  const downloadAudio = () => {
-    if (audioBlob) {
-      const audioURL = URL.createObjectURL(audioBlob);
-      const link = document.createElement('a');
-      link.href = audioURL;
-      link.download = 'recorded_audio.webm';
-      link.click();
+  // Transcribe audio using AssemblyAI
+  const transcribeAudio = async (blob) => {
+    try {
+      console.log("Blob size:", blob.size);
+      console.log("Blob type:", blob.type);
+  
+      const formData = new FormData();
+      formData.append('file', blob, 'audio.wav'); 
+  
+      const uploadResponse = await axios.post('https://api.assemblyai.com/v2/upload', formData, {
+        headers: {
+          authorization: ASSEMBLY_AI_API_KEY,
+          'Content-Type': 'multipart/form-data' 
+        },
+      });
+  
+      const fileUrl = uploadResponse.data.upload_url;
+  
+      const transcriptResponse = await axios.post(
+        'https://api.assemblyai.com/v2/transcript',
+        { audio_url: fileUrl },
+        { headers: { authorization: ASSEMBLY_AI_API_KEY } }
+      );
+  
+      const transcriptId = transcriptResponse.data.id;
+  
+      const pollingInterval = setInterval(async () => {
+        const { data } = await axios.get(`https://api.assemblyai.com/v2/transcript/${transcriptId}`, {
+          headers: { authorization: ASSEMBLY_AI_API_KEY },
+        });
+  
+        if (data.status === 'completed') {
+          clearInterval(pollingInterval);
+          setTranscription(data.text); 
+          console.log('Transcription:', data.text);
+        } else if (data.status === 'failed') {
+          clearInterval(pollingInterval);
+          console.error('Transcription failed');
+        }
+      }, 5000); 
+    } catch (error) {
+      console.error('Error during transcription:', error);
     }
   };
+  
 
   const handleNewQuestion = () => {
-    const randomIndex = Math.floor(Math.random() * randomQuestions.length);
-    setQuestion(randomQuestions[randomIndex]);
+    if (randomQuestions.length > 0) {
+      const randomIndex = Math.floor(Math.random() * randomQuestions.length);
+      setQuestion(randomQuestions[randomIndex]);
+      console.log('New question:', randomQuestions[randomIndex]);
+    } else {
+      console.log('No questions available.');
+    }
   };
 
   return (
@@ -156,22 +241,6 @@ const UpperBodyPostureAnalyzer = () => {
       <div className="relative w-96 h-96 border-4 border-blue-300 rounded-lg overflow-hidden shadow-lg mb-4">
         <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" autoPlay muted></video>
       </div>
-
-      {/* Details from API */}
-      {/* <div className="w-full max-w-md p-4 bg-white rounded-lg shadow-lg mb-4">
-        <h3 className="text-lg font-semibold mb-2 text-gray-700">Upper Body Analysis Result</h3>
-        {bodyAnalysis.confidenceScore ? (
-          <ul className="list-disc list-inside text-gray-600 space-y-1 text-sm">
-            <li>Shoulder Symmetry: {bodyAnalysis.shoulderSymmetry}</li>
-            <li>Arm Position: {bodyAnalysis.armPosition}</li>
-            <li>Head Alignment: {bodyAnalysis.headAlignment}</li>
-            <li>Confidence Score: {bodyAnalysis.confidenceScore}</li>
-            <li className="font-semibold">Feedback: {bodyAnalysis.feedback}</li>
-          </ul>
-        ) : (
-          <p className="text-gray-500 text-sm">No analysis available yet. Please ensure your webcam is active.</p>
-        )}
-      </div> */}
 
       <div className="mt-2">
         {!isRecording ? (
@@ -193,22 +262,16 @@ const UpperBodyPostureAnalyzer = () => {
         {audioBlob && (
           <div className="mt-2 space-x-2">
             <button
-              onClick={playAudio}
+              onClick={() => playAudio(audioBlob)}
               className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow hover:bg-blue-600 transition duration-200"
             >
               Play Recorded Audio
             </button>
-            <button
-              onClick={downloadAudio}
-              className="px-4 py-2 bg-purple-500 text-white font-semibold rounded-lg shadow hover:bg-purple-600 transition duration-200"
-            >
-              Download Audio
-            </button>
+            
           </div>
         )}
       </div>
 
-      {/* Random Question Field */}
       {isQuestionVisible && (
         <div className="mt-6 p-4 w-full max-w-md bg-white rounded-lg shadow-lg text-center">
           <h3 className="text-lg font-bold text-gray-700 mb-2">Question of the Day</h3>
@@ -219,6 +282,13 @@ const UpperBodyPostureAnalyzer = () => {
           >
             Next question
           </button>
+        </div>
+      )}
+
+      {transcription && (
+        <div className="mt-4 p-4 w-full max-w-md bg-white rounded-lg shadow-lg text-center">
+          <h3 className="text-lg font-bold text-gray-700 mb-2">Transcription</h3>
+          <p className="text-gray-600 text-sm mb-4">{transcription}</p>
         </div>
       )}
     </div>

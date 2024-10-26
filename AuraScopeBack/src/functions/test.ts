@@ -58,3 +58,25 @@ export const getTestsByUserId = async (req: Request, res: Response) => {
         return res.status(500).json({ error: 'An error occurred while retrieving tests' });
     }
 };
+
+export const getQuestionsByTestId = async (req: Request, res: Response) => {
+    const { testId } = req.query;
+
+    try {
+        // Convert testId to an integer and validate it
+        const testIdInt = parseInt(testId as string, 10);
+        if (isNaN(testIdInt)) {
+            return res.status(400).json({ error: 'Invalid testId' });
+        }
+
+        // Fetch questions associated with the testId
+        const questions = await prisma.test.findMany({
+            where: { testid: testIdInt },
+        });
+
+        return res.status(200).json(questions);
+    } catch (error) {
+        console.error('Error retrieving questions:', error);
+        return res.status(500).json({ error: 'An error occurred while retrieving questions' });
+    }
+};
