@@ -20,8 +20,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Main route setup
-app.use('/', );
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
   logger.info(`Server is running on http://localhost:${PORT}`);
